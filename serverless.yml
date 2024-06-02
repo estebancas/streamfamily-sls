@@ -1,0 +1,98 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: nsspyre
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: streamfamily
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: streamfamily
+
+plugins:
+  - serverless-dynamodb
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 4000
+    lambdaPort: 4001
+    allowCache: true
+    noPrependStageInUrl: true
+  serverless-dynamodb:
+    start:
+      port: 8000
+      docker: false
+      migrate: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:302715410177:table/Users
+
+functions:
+  register:
+    handler: src/register.register
+    events:
+      - httpApi:
+          path: /auth/register
+          method: post
+  login:
+    handler: src/login.login
+    events:
+      - httpApi:
+          path: /auth/login
+          method: post
+  logout:
+    handler: src/logout.logout
+    events:
+      - httpApi:
+          path: /auth/logout
+          method: post
+  addSubscription:
+    handler: src/addSubscription.addSubscription
+    events:
+      - httpApi:
+          path: /subscription
+          method: post
+  updateUser:
+    handler: src/user.updateUser
+    events:
+      - httpApi:
+          path: /user
+          method: put
+
+resources:
+  Resources:
+    Users:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Users
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+    Subscriptions:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Subscriptions
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH

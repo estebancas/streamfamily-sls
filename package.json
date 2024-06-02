@@ -1,0 +1,15 @@
+{
+    "scripts": {
+        "start": "sls offline start"
+    },
+    "dependencies": {
+        "@middy/core": "^5.2.3",
+        "aws-sdk": "^2.1632.0",
+        "bcryptjs": "^2.4.3",
+        "uuid": "^9.0.1"
+    },
+    "devDependencies": {
+        "serverless-dynamodb": "^0.2.53",
+        "serverless-offline": "^13.6.0"
+    }
+}
